@@ -1,0 +1,13 @@
+Для запуску виористовуємо командну строку
+
+Піднімаєм Postgresql
+docker-compose up
+
+Запускаємо проєкт
+java -jar .\orders-api-1.0-SNAPSHOT.jar
+
+Перевіряємо використовуя Swagger
+http://localhost:8080/swagger-ui/index.html
+
+Вимикаємо Докер
+docker-compose down
