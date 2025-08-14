@@ -50,7 +50,7 @@ public class OrderController {
         return ResponseEntity.ok(toDto(o));
     }
 
-    @Operation(summary = "Список замовлень клієнта як поставщика")
+    @Operation(summary = "Список замовлень клієнта-постачальника")
     @GetMapping("/by-supplier/{clientId}")
     public ResponseEntity<java.util.List<OrderDto>> bySupplier(@PathVariable UUID clientId) {
         log.info("GET /api/orders/client/(by supplier){}", clientId);
@@ -58,7 +58,7 @@ public class OrderController {
         return ResponseEntity.ok(orderRepo.findBySupplier(client).stream().map(this::toDto).toList());
     }
 
-    @Operation(summary = "Список замовлень клієнта як покупець")
+    @Operation(summary = "Список замовлень клієнта-покупця")
     @GetMapping("/by-consumer/{clientId}")
     public ResponseEntity<java.util.List<OrderDto>> byConsumer(@PathVariable UUID clientId) {
         log.info("GET /api/orders/client/(by consumer){}", clientId);
