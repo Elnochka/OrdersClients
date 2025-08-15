@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import orders.repository.ClientRepository;
 import orders.repository.OrderRepository;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,8 @@ public class ClientService {
 
     public ClientDto createClient(CreateClientRequest req) {
         log.info("Saving new client: {}", req.getName());
-        clientRepo.findByEmailIgnoreCase(req.getEmail()).ifPresent(c -> { throw new BusinessException("Email already exists"); });
+        clientRepo.findByEmailIgnoreCase(req.getEmail()).ifPresent(c ->
+        { throw new BusinessException("Email already exists"); });
         Client client = new Client();
         client.setName(req.getName());
         client.setEmail(req.getEmail().toLowerCase());
@@ -48,10 +50,14 @@ public class ClientService {
     }
 
     public ClientDto updateClient(UUID id, UpdateClientRequest req) {
-        Client client = clientRepo.findById(id).orElseThrow(() -> new BusinessException("Client not found"));
+        Client client = clientRepo.findById(id).orElseThrow(() ->
+                new BusinessException("Client not found"));
         if (!client.getEmail().equalsIgnoreCase(req.getEmail())) {
-            clientRepo.findByEmailIgnoreCase(req.getEmail()).ifPresent(existing -> {
-                if (!existing.getId().equals(id)) throw new BusinessException("Email already in use");
+            clientRepo.findByEmailIgnoreCase(req.getEmail())
+                    .ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new BusinessException("Email already in use");
+                }
             });
         }
         client.setName(req.getName());
@@ -62,7 +68,8 @@ public class ClientService {
 
     @Transactional
     public void deactivateClient(UUID id) {
-        Client client = clientRepo.findById(id).orElseThrow(() -> new BusinessException("Client not found"));
+        Client client = clientRepo.findById(id).orElseThrow(() ->
+                new BusinessException("Client not found"));
         if (!client.isActive()) return;
         client.setActive(false);
         client.setDeactivatedAt(Instant.now());
@@ -71,29 +78,38 @@ public class ClientService {
 
     public List<ClientDto> searchClients(String keyword) {
         log.info("Searching clients with keyword: {}", keyword);
-        if (keyword == null || keyword.trim().length() < 3) throw new BusinessException("Search keyword must be at least 3 characters");
-        return clientRepo.searchByKeyword(keyword.trim().toLowerCase()).stream().map(this::toDto).collect(Collectors.toList());
+        if (keyword == null || keyword.trim().length() < 3) {
+            throw new BusinessException("Search keyword must be at least 3 characters");
+        }
+        return clientRepo.searchByKeyword(keyword.trim().toLowerCase())
+                .stream().map(this::toDto).collect(Collectors.toList());
     }
 
     public java.math.BigDecimal getClientProfit(UUID id) {
-        Client c = clientRepo.findById(id).orElseThrow(() -> new BusinessException("Client not found"));
+        Client c = clientRepo.findById(id).orElseThrow(() ->
+                new BusinessException("Client not found"));
         java.math.BigDecimal revenue = orderRepo.sumRevenueAsSupplier(c);
         java.math.BigDecimal costs = orderRepo.sumCostAsConsumer(c);
-        return revenue.subtract(costs == null ? java.math.BigDecimal.ZERO : costs);
+        return revenue.subtract(costs == null ? BigDecimal.ZERO : costs);
     }
 
-    public List<ClientDto> findClientsByProfitRange(java.math.BigDecimal min, java.math.BigDecimal max) {
+    public List<ClientDto> findClientsByProfitRange(BigDecimal min, BigDecimal max) {
         List<Client> all = clientRepo.findAll();
         return all.stream().filter(c -> {
-            java.math.BigDecimal profit = orderRepo.sumRevenueAsSupplier(c).subtract(orderRepo.sumCostAsConsumer(c));
+            java.math.BigDecimal profit = orderRepo.sumRevenueAsSupplier(c)
+                    .subtract(orderRepo.sumCostAsConsumer(c));
             return profit.compareTo(min) >= 0 && profit.compareTo(max) <= 0;
         }).map(this::toDto).collect(Collectors.toList());
     }
 
     private ClientDto toDto(Client c) {
         ClientDto dto = new ClientDto();
-        dto.setId(c.getId()); dto.setName(c.getName()); dto.setEmail(c.getEmail()); dto.setAddress(c.getAddress());
-        dto.setActive(c.isActive()); dto.setDeactivatedAt(c.getDeactivatedAt());
+        dto.setId(c.getId());
+        dto.setName(c.getName());
+        dto.setEmail(c.getEmail());
+        dto.setAddress(c.getAddress());
+        dto.setActive(c.isActive());
+        dto.setDeactivatedAt(c.getDeactivatedAt());
         return dto;
     }
 

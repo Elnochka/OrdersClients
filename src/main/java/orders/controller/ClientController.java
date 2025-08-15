@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import orders.service.ClientService;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +33,8 @@ public class ClientController {
         log.info("POST /api/clients - Creating client: {}", req.getName());
         ClientDto created = service.createClient(req);
         log.debug("Client created with id={}", created.getId());
-        return ResponseEntity.created(URI.create("/api/clients/" + created.getId())).body(created);
+        return ResponseEntity.created(URI.create("/api/clients/" + created.getId()))
+                .body(created);
     }
 
     @Operation(summary = "Отримуємо клєнта по ID")
@@ -44,7 +46,8 @@ public class ClientController {
 
     @Operation(summary = "Оновлюємо клієнта")
     @PutMapping("/{id}")
-    public ResponseEntity<ClientDto> update(@PathVariable UUID id, @Valid @RequestBody UpdateClientRequest req) {
+    public ResponseEntity<ClientDto> update(@PathVariable UUID id,
+                                            @Valid @RequestBody UpdateClientRequest req) {
         log.info("Update /api/clients/{}", id);
         return ResponseEntity.ok(service.updateClient(id, req));
     }
@@ -67,14 +70,14 @@ public class ClientController {
 
     @Operation(summary = "Сумарна вигода клієнта")
     @GetMapping("/{id}/profit")
-    public ResponseEntity<java.math.BigDecimal> profit(@PathVariable UUID id) {
+    public ResponseEntity<BigDecimal> profit(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getClientProfit(id));
     }
 
     @Operation(summary = "Пошук клієнтів у діапазоні вигоди")
     @GetMapping("/by-profit")
-    public ResponseEntity<List<ClientDto>> byProfit(@RequestParam("min") java.math.BigDecimal min,
-                                                    @RequestParam("max") java.math.BigDecimal max) {
+    public ResponseEntity<List<ClientDto>> byProfit(@RequestParam("min") BigDecimal min,
+                                                    @RequestParam("max") BigDecimal max) {
         return ResponseEntity.ok(service.findClientsByProfitRange(min, max));
     }
 

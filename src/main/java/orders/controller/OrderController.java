@@ -29,7 +29,9 @@ public class OrderController {
     private final OrderRepository orderRepo;
 
     public OrderController(OrderService orderService, ClientRepository clientRepo, OrderRepository orderRepo) {
-        this.orderService = orderService; this.clientRepo = clientRepo; this.orderRepo = orderRepo;
+        this.orderService = orderService;
+        this.clientRepo = clientRepo;
+        this.orderRepo = orderRepo;
     }
 
     @Operation(summary = "Створюємо замовлення (з емуляцією затримки збереження)")
@@ -46,7 +48,8 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderDto> get(@PathVariable UUID id) {
         log.info("GET /api/orders/{}", id);
-        OrderEntity o = orderRepo.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+        OrderEntity o = orderRepo.findById(id).orElseThrow(() ->
+                new RuntimeException("Order not found"));
         return ResponseEntity.ok(toDto(o));
     }
 
@@ -55,7 +58,8 @@ public class OrderController {
     public ResponseEntity<java.util.List<OrderDto>> bySupplier(@PathVariable UUID clientId) {
         log.info("GET /api/orders/client/(by supplier){}", clientId);
         var client = clientRepo.findById(clientId).orElseThrow();
-        return ResponseEntity.ok(orderRepo.findBySupplier(client).stream().map(this::toDto).toList());
+        return ResponseEntity.ok(orderRepo.findBySupplier(client).stream()
+                .map(this::toDto).toList());
     }
 
     @Operation(summary = "Список замовлень клієнта-покупця")
@@ -63,14 +67,19 @@ public class OrderController {
     public ResponseEntity<java.util.List<OrderDto>> byConsumer(@PathVariable UUID clientId) {
         log.info("GET /api/orders/client/(by consumer){}", clientId);
         var client = clientRepo.findById(clientId).orElseThrow();
-        return ResponseEntity.ok(orderRepo.findByConsumer(client).stream().map(this::toDto).toList());
+        return ResponseEntity.ok(orderRepo.findByConsumer(client).stream()
+                .map(this::toDto).toList());
     }
 
     private OrderDto toDto(OrderEntity e){
         OrderDto dto = new OrderDto();
-        dto.setId(e.getId()); dto.setTitle(e.getTitle());
-        dto.setSupplierId(e.getSupplier().getId()); dto.setConsumerId(e.getConsumer().getId());
-        dto.setPrice(e.getPrice()); dto.setProcessingStart(e.getProcessingStart()); dto.setProcessingEnd(e.getProcessingEnd());
+        dto.setId(e.getId());
+        dto.setTitle(e.getTitle());
+        dto.setSupplierId(e.getSupplier().getId());
+        dto.setConsumerId(e.getConsumer().getId());
+        dto.setPrice(e.getPrice());
+        dto.setProcessingStart(e.getProcessingStart());
+        dto.setProcessingEnd(e.getProcessingEnd());
         dto.setCreatedAt(e.getCreatedAt());
         return dto;
     }
