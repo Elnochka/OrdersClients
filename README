@@ -11,3 +11,8 @@ http://localhost:8080/swagger-ui/index.html
 
 Вимикаємо Докер
 docker-compose down
+
+Щоб перевірити сценарії використовуйте Swagger
+/api/scenarios
+по-перше створіть клієнтів у БД за допомогою Swagger
+далі використовуйте clientId для переірки сценарієв
