@@ -7,8 +7,6 @@ import orders.entity.OrderEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import orders.repository.ClientRepository;
@@ -16,6 +14,7 @@ import orders.repository.OrderRepository;
 import orders.service.OrderService;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -42,6 +41,7 @@ public class OrderController {
         OrderDto dto = toDto(o);
         log.debug("Order created with id={}", dto.getId());
         return ResponseEntity.created(URI.create("/api/orders/" + o.getId())).body(dto);
+
     }
 
     @Operation(summary = "Отримати замовлення по ID")
@@ -55,7 +55,7 @@ public class OrderController {
 
     @Operation(summary = "Список замовлень клієнта-постачальника")
     @GetMapping("/by-supplier/{clientId}")
-    public ResponseEntity<java.util.List<OrderDto>> bySupplier(@PathVariable UUID clientId) {
+    public ResponseEntity<List<OrderDto>> bySupplier(@PathVariable UUID clientId) {
         log.info("GET /api/orders/client/(by supplier){}", clientId);
         var client = clientRepo.findById(clientId).orElseThrow();
         return ResponseEntity.ok(orderRepo.findBySupplier(client).stream()
@@ -64,7 +64,7 @@ public class OrderController {
 
     @Operation(summary = "Список замовлень клієнта-покупця")
     @GetMapping("/by-consumer/{clientId}")
-    public ResponseEntity<java.util.List<OrderDto>> byConsumer(@PathVariable UUID clientId) {
+    public ResponseEntity<List<OrderDto>> byConsumer(@PathVariable UUID clientId) {
         log.info("GET /api/orders/client/(by consumer){}", clientId);
         var client = clientRepo.findById(clientId).orElseThrow();
         return ResponseEntity.ok(orderRepo.findByConsumer(client).stream()

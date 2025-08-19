@@ -17,16 +17,19 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(payload(400, ex.getMessage()));
     }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String,Object>> handleValidation(MethodArgumentNotValidException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(payload(400, "Validation error"));
     }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String,Object>> handleAny(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(payload(500, ex.getMessage()));
     }
+
     private Map<String,Object> payload(int status, String message){
 
         Map<String,Object> m = new LinkedHashMap<>();

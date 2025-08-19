@@ -13,11 +13,23 @@ import java.util.UUID;
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     List<OrderEntity> findBySupplier(Client supplier);
     List<OrderEntity> findByConsumer(Client consumer);
-
     @Query("select coalesce(sum(o.price),0) from OrderEntity o where o.supplier = :client")
     BigDecimal sumRevenueAsSupplier(@Param("client") Client client);
 
     @Query("select coalesce(sum(o.price),0) from OrderEntity o where o.consumer = :client")
     BigDecimal sumCostAsConsumer(@Param("client") Client client);
+
+    @Query("""
+           SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END
+           FROM OrderEntity o
+           WHERE o.title = :title
+             AND o.supplier.id = :supplierId
+             AND o.consumer.id = :consumerId
+             AND o.price = :price
+           """)
+    boolean existsDuplicateOrder(@Param("title") String title,
+                                 @Param("supplierId") UUID supplierId,
+                                 @Param("consumerId") UUID consumerId,
+                                 @Param("price") BigDecimal price);
 
 }
