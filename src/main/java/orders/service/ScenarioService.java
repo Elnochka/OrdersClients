@@ -28,6 +28,7 @@ public class ScenarioService {
     private final ClientService service;
     private final Random random = new Random();
 
+
     public List<ScenarioOrderResult> scenarioDuplicateOrders(UUID supplierId,
                                                              UUID consumerId, int n) {
 
@@ -40,29 +41,16 @@ public class ScenarioService {
         }
 
         List<ScenarioOrderResult> scenarioResult = new ArrayList<>();
-        CreateOrderRequest req = new CreateOrderRequest();
 
-        req.setTitle("ScenarioOrder");
-        req.setPrice(BigDecimal.ONE);
-        req.setSupplierId(supplierId);
-        req.setConsumerId(consumerId);
+        String title = "ScenarioOrder";
+        BigDecimal price = BigDecimal.ONE;        
+        CreateOrderRequest req = createdRequest(title, consumerId,
+                supplierId, price);
 
         IntStream.range(0, n + 1).forEach(i -> {
-            ScenarioOrderResult result = new ScenarioOrderResult();
-            result.setTitle(req.getTitle());
-            result.setPrice(req.getPrice());
+            ScenarioOrderResult result = createdResult(req);
+            scenarioResult.add(result);
 
-            try {
-                var order = orderService.createOrder(req);
-                result.setSuccess(true);
-                result.setOrderId(order.getId());
-                result.setMessage("Created successfully");
-                scenarioResult.add(result);
-            } catch (Exception e) {
-                result.setSuccess(false);
-                result.setMessage(e.getMessage());
-                scenarioResult.add(result);
-            }
         });
 
         return scenarioResult;
@@ -77,37 +65,32 @@ public class ScenarioService {
         }
 
         if(supplierIds.get(0).equals(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))) {
-            supplierIds = getListUUID(10);
+            supplierIds = getListUUID(11);
         }
 
         List<ScenarioOrderResult> scenarioResult = new ArrayList<>();
 
-        int index = 0;
-        for (int price = 100; price >= 10; price -= 10) {
-            CreateOrderRequest req = new CreateOrderRequest();
-            req.setTitle("DecreasingOrder");
-            req.setPrice(BigDecimal.valueOf(price));
-            req.setConsumerId(consumerId);
+        String title = "DecreasingOrder";
+        BigDecimal price = BigDecimal.valueOf(970);
+        UUID supplierId = supplierIds.get(0);
+        CreateOrderRequest req = createdRequest(title, consumerId,
+                supplierId, price);
 
-            // Выбираем нового поставщика
-            UUID supplierId = supplierIds.get(index % supplierIds.size());
-            req.setSupplierId(supplierId);
+        ScenarioOrderResult result = createdResult(req);
+        scenarioResult.add(result);
+        
+        int index = 1;
+        for (int priceId = 100; priceId >= 10; priceId -= 10) {
+            
+            title = "DecreasingOrder" + index;
+            price = BigDecimal.valueOf(priceId);
+            supplierId = supplierIds.get(index % supplierIds.size());
+            req = createdRequest(title, consumerId,
+                    supplierId, price);
+            
+            result = createdResult(req);
+            scenarioResult.add(result);
 
-            ScenarioOrderResult result = new ScenarioOrderResult();
-            result.setTitle(req.getTitle());
-            result.setPrice(req.getPrice());
-
-            try {
-                var order = orderService.createOrder(req);
-                result.setSuccess(true);
-                result.setOrderId(order.getId());
-                result.setMessage("Created successfully");
-                scenarioResult.add(result);
-            } catch (Exception e) {
-                result.setSuccess(false);
-                result.setMessage(e.getMessage());
-                scenarioResult.add(result);
-            }
             index++;
         }
     return scenarioResult;
@@ -128,31 +111,17 @@ public class ScenarioService {
         List<ScenarioOrderResult> scenarioResult = new ArrayList<>();
         Client consumer = clientRepository.findById(consumerId).orElseThrow();
 
+
         for (int i = 1; i <= n; i++) {
-            CreateOrderRequest req = new CreateOrderRequest();
-            req.setTitle("Order" + i);
-            req.setPrice(BigDecimal.valueOf(10 + i));
-            req.setConsumerId(consumerId);
-
-            // Новый supplier для каждого заказа
+            
+            String title = "Order" + i; 
+            BigDecimal price = BigDecimal.valueOf(10 + i);
             UUID supplierId = supplierIds.get(i % supplierIds.size());
-            req.setSupplierId(supplierId);
-
-            ScenarioOrderResult result = new ScenarioOrderResult();
-            result.setTitle(req.getTitle());
-            result.setPrice(req.getPrice());
-
-            try {
-                var order = orderService.createOrder(req);
-                result.setSuccess(true);
-                result.setOrderId(order.getId());
-                result.setMessage("Created successfully");
-                scenarioResult.add(result);
-            } catch (Exception e) {
-                result.setSuccess(false);
-                result.setMessage(e.getMessage());
-                scenarioResult.add(result);
-            }
+            CreateOrderRequest req = createdRequest(title, consumerId, 
+                    supplierId, price);
+            
+            ScenarioOrderResult result = createdResult(req);
+            scenarioResult.add(result);
 
             // В середине последовательности делаем клиента неактивным
             if (i == n / 2) {
@@ -162,6 +131,39 @@ public class ScenarioService {
         }
 
         return scenarioResult;
+
+    }
+
+    private CreateOrderRequest createdRequest(String title, UUID consumerId,
+                                              UUID supplierId, BigDecimal price) {
+
+        CreateOrderRequest req = new CreateOrderRequest();
+        req.setTitle(title);
+        req.setPrice(price);
+        req.setConsumerId(consumerId);
+        req.setSupplierId(supplierId);
+        return req;
+
+    }
+
+    private ScenarioOrderResult createdResult(CreateOrderRequest req) {
+
+        ScenarioOrderResult result = new ScenarioOrderResult();
+        result.setTitle(req.getTitle());
+        result.setPrice(req.getPrice());
+
+        try {
+            var order = orderService.createOrder(req);
+            result.setSuccess(true);
+            result.setOrderId(order.getId());
+            result.setMessage("Created successfully");
+
+        } catch (Exception e) {
+            result.setSuccess(false);
+            result.setMessage(e.getMessage());
+
+        }
+        return result;
 
     }
 
@@ -177,11 +179,11 @@ public class ScenarioService {
     private ClientDto getClient(int n){
         CreateClientRequest req = new CreateClientRequest();
         int nRandom = (n + random.nextInt(1000));
-        req.setName("clientDuplicateName" + nRandom);
-        req.setAddress("addressDuplicate" + nRandom);
-        req.setEmail("emailDuplicate" + nRandom + "@ukr.net");
-        ClientDto created = service.createClient(req);
-        return created;
+        req.setName("clientNameAuto" + nRandom);
+        req.setAddress("addressAuto" + nRandom);
+        req.setEmail("emailAuto" + nRandom + "@ukr.net");
+        ClientDto client = service.createClient(req);
+        return client;
     }
 
 }
