@@ -37,17 +37,15 @@ public class OrderService {
         UUID sId = req.getSupplierId();
         UUID cId = req.getConsumerId();
 
-            // 1. Проверка цены
             if (req.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new BusinessException("Price must be > 0");
             }
 
-            // 2. Нельзя создать заказ самому себе
             if (sId.equals(cId)) {
                 throw new BusinessException("Supplier and consumer must be different");
             }
 
-            // 3. Загружаем клиентов с блокировкой (чтобы избежать гонок)
+            // Загружаем клиентов с блокировкой (чтобы избежать гонок)
             List<UUID> ids = Stream.of(sId, cId).sorted().collect(Collectors.toList());
             Client first = clientRepository.findByIdForUpdate(ids.get(0)).orElseThrow(() ->
                     new BusinessException("Client not found"));
@@ -56,19 +54,16 @@ public class OrderService {
             Client supplier = first.getId().equals(sId) ? first : second;
             Client consumer = first.getId().equals(cId) ? first : second;
 
-            // 4. Клиенты должны быть активны в момент обработки
             if (!supplier.isActive() || !consumer.isActive()) {
                 throw new BusinessException("Cannot create order for inactive client");
             }
 
-            // 5. Проверка дубликата заказа
             boolean exists = orderRepository.existsDuplicateOrder(
                     req.getTitle(), supplier.getId(), consumer.getId(), req.getPrice());
             if (exists) {
                 throw new BusinessException("Duplicate order detected");
             }
 
-            // 6. Проверка будущей выгоды
             BigDecimal supplierCurrent = orderRepository.sumRevenueAsSupplier(supplier)
                     .subtract(orderRepository.sumCostAsConsumer(supplier));
             BigDecimal consumerCurrent = orderRepository.sumRevenueAsSupplier(consumer)
@@ -82,19 +77,16 @@ public class OrderService {
                 throw new BusinessException("Creating this order would make a client's total profit < -1000");
             }
 
-            // 7. Эмуляция задержки обработки 1..10 сек
             try {
                 Thread.sleep((1 + random.nextInt(10)) * 1000L);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
-            // 8. Повторная проверка активности клиента (вдруг его отключили во время сна)
             if (!supplier.isActive() || !consumer.isActive()) {
                 throw new BusinessException("Client became inactive during processing");
             }
 
-            // 9. Сохраняем заказ
             try {
                 OrderEntity order = new OrderEntity();
                 order.setTitle(req.getTitle());

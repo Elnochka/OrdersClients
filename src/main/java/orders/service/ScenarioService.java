@@ -40,35 +40,35 @@ public class ScenarioService {
             supplierId = getListUUID(1).get(0);
         }
 
-        List<ScenarioOrderResult> scenarioResult = new ArrayList<>();
+        List<ScenarioOrderResult> listScenarioOrderResult = new ArrayList<>();
 
         String title = "ScenarioOrder";
         BigDecimal price = BigDecimal.ONE;        
         CreateOrderRequest req = createdRequest(title, consumerId,
                 supplierId, price);
 
-        IntStream.range(0, n + 1).forEach(i -> {
-            ScenarioOrderResult result = createdResult(req);
-            scenarioResult.add(result);
+        IntStream.range(0, n).forEach(i -> {
+            ScenarioOrderResult scenarioOrderResult = createdResult(req);
+            listScenarioOrderResult.add(scenarioOrderResult);
 
         });
 
-        return scenarioResult;
+        return listScenarioOrderResult;
     }
 
 
     public List<ScenarioOrderResult> scenarioDecreasingPriceWithChangingSupplier(
-            UUID consumerId, List<UUID> supplierIds) {
+            UUID consumerId, List<UUID> supplierIds, int n) {
 
         if(consumerId.equals(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))) {
             consumerId = getListUUID(1).get(0);
         }
 
         if(supplierIds.get(0).equals(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))) {
-            supplierIds = getListUUID(11);
+            supplierIds = getListUUID(n);
         }
 
-        List<ScenarioOrderResult> scenarioResult = new ArrayList<>();
+        List<ScenarioOrderResult> listScenarioOrderResult = new ArrayList<>();
 
         String title = "DecreasingOrder";
         BigDecimal price = BigDecimal.valueOf(970);
@@ -76,8 +76,8 @@ public class ScenarioService {
         CreateOrderRequest req = createdRequest(title, consumerId,
                 supplierId, price);
 
-        ScenarioOrderResult result = createdResult(req);
-        scenarioResult.add(result);
+        ScenarioOrderResult scenarioOrderResult = createdResult(req);
+        listScenarioOrderResult.add(scenarioOrderResult);
         
         int index = 1;
         for (int priceId = 100; priceId >= 10; priceId -= 10) {
@@ -87,13 +87,13 @@ public class ScenarioService {
             supplierId = supplierIds.get(index % supplierIds.size());
             req = createdRequest(title, consumerId,
                     supplierId, price);
-            
-            result = createdResult(req);
-            scenarioResult.add(result);
+
+            scenarioOrderResult = createdResult(req);
+            listScenarioOrderResult.add(scenarioOrderResult);
 
             index++;
         }
-    return scenarioResult;
+    return listScenarioOrderResult;
 
     }
 
@@ -108,9 +108,8 @@ public class ScenarioService {
             supplierIds = getListUUID(n);
         }
 
-        List<ScenarioOrderResult> scenarioResult = new ArrayList<>();
+        List<ScenarioOrderResult> listScenarioOrderResult = new ArrayList<>();
         Client consumer = clientRepository.findById(consumerId).orElseThrow();
-
 
         for (int i = 1; i <= n; i++) {
             
@@ -120,8 +119,8 @@ public class ScenarioService {
             CreateOrderRequest req = createdRequest(title, consumerId, 
                     supplierId, price);
             
-            ScenarioOrderResult result = createdResult(req);
-            scenarioResult.add(result);
+            ScenarioOrderResult scenarioOrderResult = createdResult(req);
+            listScenarioOrderResult.add(scenarioOrderResult);
 
             // В середине последовательности делаем клиента неактивным
             if (i == n / 2) {
@@ -130,7 +129,7 @@ public class ScenarioService {
             }
         }
 
-        return scenarioResult;
+        return listScenarioOrderResult;
 
     }
 

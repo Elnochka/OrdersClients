@@ -17,6 +17,7 @@ public class ScenarioController {
     private final ScenarioService scenarioService;
 
     @PostMapping("/duplicate-orders")
+    @Operation(summary = "перевірка на дублікати")
     public ResponseEntity<List<ScenarioOrderResult>> runDuplicateOrders(@RequestParam UUID supplierId,
                                                                         @RequestParam UUID consumerId,
                                                                         @RequestParam(defaultValue = "3") int n) {
@@ -26,19 +27,20 @@ public class ScenarioController {
     }
 
     @PostMapping("/decreasing-price-changing-suppliers")
-    @Operation(summary = "Сценарий 2: несколько заказов с уменьшающейся ценой и разными поставщиками")
+    @Operation(summary = "декілька замовлень зі знижувальною ціною")
     public ResponseEntity<List<ScenarioOrderResult>> decreasingPriceChangingSuppliers(
             @RequestParam UUID consumerId,
+            @RequestParam(defaultValue = "11") int n,
             @RequestBody List<UUID> supplierIds) {
 
         return ResponseEntity.ok(scenarioService.
                 scenarioDecreasingPriceWithChangingSupplier(consumerId,
-                        supplierIds).stream().toList());
+                        supplierIds, n).stream().toList());
 
     }
 
     @PostMapping("/deactivation-changing-suppliers")
-    @Operation(summary = "Сценарий 3: несколько заказов с разными поставщиками, в середине — отключение клиента")
+    @Operation(summary = "деіклька замовлень, у середині — деактівація кліента")
     public ResponseEntity<List<ScenarioOrderResult>> deactivationChangingSuppliers(
             @RequestParam UUID consumerId,
             @RequestParam(defaultValue = "10") int n,
