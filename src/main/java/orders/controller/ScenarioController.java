@@ -40,7 +40,7 @@ public class ScenarioController {
     }
 
     @PostMapping("/deactivation-changing-suppliers")
-    @Operation(summary = "деіклька замовлень, у середині — деактівація кліента")
+    @Operation(summary = "деіклька замовлень, у середині — деактивація клієнта")
     public ResponseEntity<List<ScenarioOrderResult>> deactivationChangingSuppliers(
             @RequestParam UUID consumerId,
             @RequestParam(defaultValue = "10") int n,
